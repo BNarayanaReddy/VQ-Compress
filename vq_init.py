@@ -3,23 +3,24 @@ from vector_quantize_pytorch import ResidualVQ
 import torch.nn as nn
 from torch.nn.functional import cosine_similarity
 
-class ResidualVectorQuanize(nn.Module):
-    def __init__(self, input_dim, dim, codebook_dim, n_q, bins): # in_dim - dimension of the codebook emb, bins - number of embeddings per CB
+class ResidualVectorQuantize(nn.Module):
+    def __init__(self, input_dim, dim, n_q, bins): # in_dim - dimension of the codebook emb, bins - number of embeddings per CB
         super().__init__()
+        self.input_dim = input_dim
         self.dim = dim
-        self.codebook_dim = codebook_dim
+        self.codebook_dim = dim
         self.n_q = n_q
         self.bins = bins
 
         # Model
         self.rvq_quantizer = ResidualVQ(
-                dim = input_dim,
-                codebook_size = bins, # codebook size
+                dim = self.input_dim,
+                codebook_size = self.bins, # codebook size
                 decay = 0.9, # the exponential moving average decay, lower means the dictionary will change faster
                 commitment_weight = 1.,   # the weight on the commitment loss
                 threshold_ema_dead_code = 2,
                 use_cosine_sim = False,
-                codebook_dim = dim,
+                codebook_dim = self.codebook_dim,
                 num_quantizers= self.n_q
             )
         
@@ -33,6 +34,7 @@ class ResidualVectorQuanize(nn.Module):
     
     def forward(self, features):
         quantized, indices, commit_loss = self.rvq_quantizer(features)
+        return quantized, commit_loss
 
     def encode(self, features):
         # B, T, C
@@ -43,4 +45,11 @@ class ResidualVectorQuanize(nn.Module):
         quantized=self.rvq_quantizer.get_output_from_indices(codes)
         return quantized
 
-
+if __name__ == '__main__':
+    model = ResidualVectorQuantize(
+        input_dim=512,
+        dim = 128,
+        n_q=8,
+        bins=512        
+    )
+    print(model)
