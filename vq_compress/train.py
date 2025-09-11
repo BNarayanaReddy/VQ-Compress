@@ -27,7 +27,7 @@ if __name__ == '__main__':
     data_loader = DataLoader(dataset, batch_size=1, shuffle=True)
     rvq = ResidualVectorQuantize(
         input_dim=64,
-        codebook_dim=64,
+        codebook_dim=32,
         n_q=4,
         bins=1024 
     )
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     )
     print(len(list(rvq.parameters())))
     # lr_sch
-    lr_sch = ExponentialLR(optimizer, 0.99)
+    # lr_sch = ExponentialLR(optimizer, 0.99)
     # Training
     optimizer.zero_grad()
 
@@ -58,9 +58,8 @@ if __name__ == '__main__':
             commit_loss.backward()  
             optimizer.step()
             print("Loss", commit_loss)
-        lr_sch.step()
         if epoch % 10:
-            with open("debug_ckpt_statedictWithLearnableCodebook.txt", 'a')as ff:
+            with open("Learnable_Commit.txt", 'a')as ff:
                 print(rvq.state_dict(), file = ff)
                 print("Loss: ", commit_loss, file = ff)
         #     state_dict = {
