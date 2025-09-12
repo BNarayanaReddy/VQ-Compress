@@ -4,11 +4,10 @@ import torch.nn as nn
 from torch.nn.functional import cosine_similarity
 
 class ResidualVectorQuantize(nn.Module):
-    def __init__(self, input_dim, dim, n_q, bins): # in_dim - dimension of the codebook emb, bins - number of embeddings per CB
+    def __init__(self, input_dim, codebook_dim, n_q, bins): # in_dim - dimension of the codebook emb, bins - number of embeddings per CB
         super().__init__()
         self.input_dim = input_dim
-        self.dim = dim
-        self.codebook_dim = dim
+        self.codebook_dim = codebook_dim
         self.n_q = n_q
         self.bins = bins
 
@@ -21,7 +20,10 @@ class ResidualVectorQuantize(nn.Module):
                 threshold_ema_dead_code = 2,
                 use_cosine_sim = False,
                 codebook_dim = self.codebook_dim,
-                num_quantizers= self.n_q
+                num_quantizers= self.n_q,
+                learnable_codebook = True,
+                ema_update = False
+                
             )
         
     def cosine_sim_loss(self, features, target_features):
