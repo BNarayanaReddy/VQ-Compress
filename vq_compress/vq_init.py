@@ -21,8 +21,8 @@ class ResidualVectorQuantize(nn.Module):
                 use_cosine_sim = False,
                 codebook_dim = self.codebook_dim,
                 num_quantizers= self.n_q,
-                learnable_codebook = True,
-                ema_update = False
+                # learnable_codebook = True,
+                # ema_update = False
                 
             )
         

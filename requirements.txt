@@ -1,3 +1,4 @@
 vector_quantize_pytorch==1.23.2
 torch==2.7.1
 torchaudio==2.8.0
+torchvision==0.23.0
