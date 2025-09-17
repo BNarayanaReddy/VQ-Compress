@@ -10,6 +10,7 @@ from torch.nn.functional import cosine_similarity
 import matplotlib.pyplot as plt
 from torch.optim import Adam
 from vq_init import ResidualVectorQuantize 
+import os
 
 mse_loss = nn.MSELoss()
 transform = transforms.Compose([
@@ -58,16 +59,19 @@ under_completeAE = under_completeAE.to('cuda')
 
 
 # Training
-def fit_undercompleteAE(under_completeAE, epochs = 100, lr = 1e-3, eps = 1e-8):
+def fit_undercompleteAE(under_completeAE, epochs = 1, lr = 1e-3, eps = 1e-8):
+    if "model.ckpt" in list(os.listdir('.')):
+        model = torch.load('model.ckpt', weights_only=True, map_location='cuda')
+        under_completeAE.load_state_dict(model)
     optimizer = Adam(under_completeAE.parameters(), lr=lr, eps = eps)
     under_completeAE = under_completeAE.to('cuda')
     for epoch in range(1, epochs+1):
         epoch_loss= 0
         for step, batch in enumerate(train_dataloader):
             optimizer.zero_grad()
-            batch = batch.to('cuda')
+            
             x, y = batch
-            x = x.view(-1, 28*28)
+            x = x.view(-1, 28*28).to('cuda')
 
             # fwd prop
             x_hat = under_completeAE(x)
@@ -79,10 +83,15 @@ def fit_undercompleteAE(under_completeAE, epochs = 100, lr = 1e-3, eps = 1e-8):
             optimizer.step()
             with torch.no_grad():
               epoch_loss += loss
-    print(f"Loss: {epoch}", epoch_loss/len(train_dataloader))
+        print(f"Loss: {epoch}", epoch_loss/len(train_dataloader))
+
+fit_undercompleteAE(under_completeAE)
+torch.save(under_completeAE.state_dict(), "model.ckpt")
 
 for batch in test_dataloader:
     plt.figure(figsize=(12, 4))
+    model = torch.load('model.ckpt')
+    under_completeAE.load_state_dict(model)
     under_completeAE.eval()
     x = batch[0][10]
     plt.subplot(1, 2, 1)
